@@ -3,6 +3,8 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import defaultdict
+from scipy.stats import poisson as pois
+from scipy.stats import norm
 
 def poisson(theta):
     k = 0
@@ -24,6 +26,79 @@ def normal(theta, sigma):
 theta_poisson = 17.5
 theta_normal = 6.0
 sigma_normal = 15.5
+
+# ПОСТРОЕНИЕ ДЛЯ ПУАССОНА
+
+# Генерация выборки
+sample_size = 1000
+sample = [poisson(theta_poisson) for _ in range(sample_size)]
+
+# Создание графика
+plt.figure(figsize=(12, 6))
+
+# Гистограмма экспериментальной выборки
+plt.hist(sample, bins=range(0, max(sample)+1), density=True,
+         alpha=0.7, color='lightblue', edgecolor='black',
+         label='Экспериментальная выборка')
+
+# Теоретическое распределение Пуассона
+x = np.arange(0, max(sample)+1)
+theoretical_probs = pois.pmf(x, theta_poisson)
+
+plt.plot(x, theoretical_probs, 'ro-', linewidth=2, markersize=6,
+         label='Теоретическое распределение Пуассона')
+
+# Настройки графика
+plt.xlabel('Значение k')
+plt.ylabel('Вероятность P(X=k)')
+plt.title(f'Сравнение экспериментальной выборки с теоретическим распределением Пуассона (theta={theta_poisson})')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.xlim(0, max(sample))
+
+# Добавляем теоретические вероятности на график
+for i, prob in enumerate(theoretical_probs):
+    if prob > 0.01:  # показываем только вероятности > 1%
+        plt.annotate(f'{prob:.3f}', (x[i], prob),
+                    xytext=(0, 10), textcoords='offset points',
+                    ha='center', fontsize=8)
+
+plt.tight_layout()
+plt.show()
+
+# ПОСТРОЕНИЕ ДЛЯ НОРМАЛЬНОГО
+
+sample1 = [normal(theta_normal, sigma_normal) for _ in range(sample_size)]
+# Создание графика
+plt.figure(figsize=(12, 6))
+
+# Гистограмма экспериментальной выборки
+plt.hist(sample1, bins=50, density=True,
+         alpha=0.7, color='lightblue', edgecolor='black',
+         label='Экспериментальная выборка')
+
+# Теоретическая плотность нормального распределения
+x = np.linspace(min(sample1), max(sample1), 1000)
+theoretical_pdf = norm.pdf(x, theta_normal, sigma_normal)
+
+plt.plot(x, theoretical_pdf, 'r-', linewidth=2,
+         label='Теоретическая плотность распределения')
+
+# Настройки графика
+plt.xlabel('Значение x')
+plt.ylabel('Плотность вероятности f(x)')
+plt.title(f'Сравнение экспериментальной выборки с теоретическим нормальным распределением\n(theta={theta_normal}, sigma={sigma_normal})')
+plt.legend()
+plt.grid(True, alpha=0.3)
+
+# Добавляем вертикальные линии для характеристик
+plt.axvline(theta_normal, color='red', linestyle='--', alpha=0.7, label=f'theta = {theta_normal}')
+plt.axvline(theta_normal + sigma_normal, color='orange', linestyle='--', alpha=0.7, label=f'theta + sigma = {theta_normal + sigma_normal:.1f}')
+plt.axvline(theta_normal - sigma_normal, color='orange', linestyle='--', alpha=0.7, label=f'theta - sigma = {theta_normal - sigma_normal:.1f}')
+
+plt.legend()
+plt.tight_layout()
+plt.show()
 
 sample_sizes = [5, 10, 100, 200, 400, 600, 800, 1000]
 num_samples_per_size = 5
